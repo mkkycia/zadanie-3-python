@@ -1,5 +1,7 @@
 import argparse
 import sys
+from pathlib import Path
+from random import choice, randint
 
 def generuj_strukture(trojki):
     print("\n[INFO] Generuję strukturę katalogów...")
@@ -11,11 +13,43 @@ def generuj_strukture(trojki):
 
 # Te 4 funkcje (mozna 2 jak nie robimy jsonow) TODO os 3
 
-def zapisz_csv():
-    print("[INFO] Tworzę pliki CSV... (symulacja)")
+def zapisz_csv(trojki):
+    print("[INFO] Tworzę pliki CSV...")
+    for m, d, p in trojki:
+        # Sprawdzam poprawnosc sciezki
+        dir_path = Path(f"./{m}/{d}/{p}/")
+        if(not dir_path.exists()):
+            raise FileNotFoundError(f"Katalog {dir_path} nie istnieje")
+        file_name = "Dane.csv"
+        file_path = dir_path / file_name
+        if(file_path.exists()):
+            print(f"[INFO] Plik {file_path} już istnieje, więc został nadpisany.")
+        
+        # Tworze odpowiedni plik
+        file = open(file_path, "w")
+        file.write("Model; Wynik; Czas\n")
+        results = [choice(("A", "B", "C")), str(randint(0, 1000)), str(randint(0, 1000)) + "s"]
+        for result in results:
+            file.write(result + "; ")
 
-def odczytaj_csv():
-    print("[INFO] Odczytuję pliki CSV... (symulacja)")
+    print("[OK] Pliki CSV stworzone.")
+
+def odczytaj_csv(trojki):
+    print("[INFO] Odczytuję pliki CSV...")
+    total_time = 0
+    for m, d, p in trojki:
+        # Sprawdzam poprawnosc sciezki
+        file_path = Path(f"./{m}/{d}/{p}/Dane.csv")
+        if(not file_path.exists()):
+            raise FileNotFoundError(f"Plik {file_path} nie istnieje")
+
+        # Odczytuje wynik z pliku
+        file = open(file_path, "r")
+        results = file.read().split("\n")[1].split(";")
+        if results[0].strip() == "A":
+            total_time += int(results[2].strip()[:-1])
+            
+    print(f"[OK] Odczytana wartość: {total_time}s.")
 
 def zapisz_json():
     print("[INFO] Tworzę pliki JSON... (symulacja)")
@@ -58,6 +92,18 @@ def rozszerz_liste_kodow(lista_kodow):
         wynik.append(rozszerz_kod(kod))
     return wynik
 
+poprawne_miesiace = ["styczeń", "luty", "marzec", "kwiecień", "maj", "czerwiec", "lipiec", "sierpień", "wrzesień", "październik", "listopad", "grudzień"]
+
+def zweryfikuj_miesiace(miesiace):
+    zweryfikowane = []
+    for miesiac in miesiace:
+        miesiac = miesiac.strip().lower()
+        if miesiac not in poprawne_miesiace:
+            raise ValueError(f"Nieznany miesiąc: '{miesiac}'. Dozwolone: {poprawne_miesiace}")
+        zweryfikowane.append(miesiac)
+    return zweryfikowane
+    
+
 def uprosc_strukture(miesiace, dni, pory):
     """
     Przyjmujemy:
@@ -69,6 +115,7 @@ def uprosc_strukture(miesiace, dni, pory):
     if len(miesiace) != len(dni):
         raise ValueError("Liczba elementów w --miesiace musi być równa liczbie elementów w --dni.")
 
+    miesiace = zweryfikuj_miesiace(miesiace)
     dni_na_miesiac = rozszerz_liste_kodow(dni)
     ile_dni = sum(len(lst) for lst in dni_na_miesiac)
 
@@ -161,17 +208,20 @@ def main():
     # === Wywołanie odpowiednich funkcji ===
     generuj_strukture(trojki)
 
-    if args.tworzenie:
-        if args.format == "csv":
-            zapisz_csv()
+    try:
+        if args.tworzenie:
+            if args.format == "csv":
+                zapisz_csv(trojki)
+            else:
+                zapisz_json(trojki)
         else:
-            zapisz_json()
-    else:
-        if args.format == "csv":
-            odczytaj_csv()
-        else:
-            odczytaj_json()
-
+            if args.format == "csv":
+                odczytaj_csv(trojki)
+            else:
+                odczytaj_json(trojki)
+    except FileNotFoundError as e:
+        print(f"[ERROR] {e}")
+        sys.exit(2)
 
 if __name__ == "__main__":
     main()
