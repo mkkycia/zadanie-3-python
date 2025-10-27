@@ -51,10 +51,10 @@ def odczytaj_csv(trojki):
             
     print(f"[OK] Odczytana wartość: {total_time}s.")
 
-def zapisz_json():
+def zapisz_json(trojki):
     print("[INFO] Tworzę pliki JSON... (symulacja)")
 
-def odczytaj_json():
+def odczytaj_json(trojki):
     print("[INFO] Odczytuję pliki JSON... (symulacja)")
 
 DNI = ["pn", "wt", "sr", "czw", "pt", "sb", "nd"]
