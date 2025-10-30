@@ -3,11 +3,17 @@ import sys
 from pathlib import Path
 from random import choice, randint
 
+poprawne_miesiace = ["styczeń", "luty", "marzec", "kwiecień", "maj", "czerwiec", "lipiec", "sierpień", "wrzesień", "październik", "listopad", "grudzień"]
+
 def generuj_strukture(trojki):
     print("\n[INFO] Generuję strukturę katalogów...")
     for m, d, p in trojki:
         print(f"  -> {m}/{d}/{p}")
-        # TODO os 2
+        path = Path.cwd()   
+        for i in [m, d, p]:
+            path = path / i
+            path.mkdir(parents=True, exist_ok=True)
+
     print("[OK] Struktura wygenerowana (symulacja).")
 
 
@@ -92,7 +98,6 @@ def rozszerz_liste_kodow(lista_kodow):
         wynik.append(rozszerz_kod(kod))
     return wynik
 
-poprawne_miesiace = ["styczeń", "luty", "marzec", "kwiecień", "maj", "czerwiec", "lipiec", "sierpień", "wrzesień", "październik", "listopad", "grudzień"]
 
 def zweryfikuj_miesiace(miesiace):
     zweryfikowane = []
@@ -126,7 +131,7 @@ def uprosc_strukture(miesiace, dni, pory):
         for i in range(len(pory)):
             pory[i] = pory[i].strip().lower()
             if (pory[i] not in ["w", "r"]):
-                raise ValueError(f"Niepoprawna pora dnia ({pory[i]}). Dozwolone: {["r", "w"]}")
+                raise ValueError(f"Niepoprawna pora dnia ({pory[i]}). Dozwolone: [\"r\", \"w\"]")
         if len(pory) > ile_dni:
             raise ValueError(f"Podano więcej pór ({len(pory)}) niż dni ({ile_dni}).")
         pory += ["r"] * (ile_dni - len(pory))
